@@ -1,0 +1,66 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    - Pesquisar
+{% endblock %}
+
+{% block main %}
+    <div class="index-container">
+        <div class="item-group max-w400 p-relative search-form-container">
+            <h2>Pesquisar Profissionais</h2>
+            <form method="get" action="/" class="search-form" enctype="multipart/form-data">
+                <div class="form-group">
+                    <input autocomplete="off" type="text" name="name_search" class="form-control" placeholder="Nome (opcional)">
+                </div>
+                <div class="form-group">
+                    <select class="form-control" name="state_search"></select>
+                    {% if rv == "state_search" %}
+                        <small class="form-text is-invalid">
+                            Selecione uma opção válida.
+                        </small>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <select class="form-control" name="city_search"></select>
+                    {% if rv == "city_search" %}
+                        <small class="form-text is-invalid">
+                            Selecione uma opção válida.
+                        </small>
+                    {% endif %}
+                </div>
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-secondary">Pesquisar</button>
+                </div>
+            </form>
+        </div> <!-- search-form-container -->
+        {% if results and results != "not found" %}
+            <div class="search-results">
+                {% for row in results %}
+                    <div class="profile-container item-group">
+                        <div class="picture-container">
+                            {% if row['picture'] == "" %}
+                                <img src="static/blank-profile.png" alt="{{ row['name'] }}">
+                            {% else %}
+                                <img src="{{ row['picture'] }}" alt="{{ row['name'] }}">
+                            {% endif %}
+                        </div>
+                        <div class="info-container">
+                            <p>Nome: {{ row['name']}} </p>
+                            <p>Categoria: {{ row['category'] }}</p>
+                            <p>Descrição: {{ row['description'] }}</p>
+                            <p>Telefone: {{ row['phone'] }}</p>
+                            <p>E-mail: {{ row['email'] }}</p>
+                            <a href="profissionais/{{ row['id'] }}/{{ row['name'].replace(' ', '.').lower() }}" class="btn btn-outline-secondary sticky-right">Saiba Mais</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div> <!-- search-results -->
+        {% elif results == "not found" %}
+        <div class="search-results item-group">
+            <div class="item-group">
+                <h3>Nenhum resultado encontrado.</h3>
+            </div>
+        </div> <!-- search-results -->
+        {% endif %}
+    </div> <!-- index-container -->
+{% endblock %}

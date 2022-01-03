@@ -1,0 +1,114 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    - Meus Dados
+{% endblock %}
+
+{% block main %}
+    <div class="center-element max-w400 item-group">
+        <h3>Nova Senha</h3>
+        <form method="post" action="/atualizar-dados" enctype="multipart/form-data">
+            <div class="form-group">
+                <input type="password" name="password" class="form-control" placeholder="Nova Senha">
+                {% if rv == "password" %}
+                    <small class="form-text is-invalid">
+                        A senha deve conter: entre 8 e 16 caracteres, número(s), letra(s) e caracter especial(is).
+                    </small>
+                {% else %}
+                    <small class="form-text text-muted d-none">
+                        A senha deve conter: entre 8 e 16 caracteres, número(s), letra(s) e caracter especial(is).
+                    </small>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <input type="password" name="confirmation" class="form-control" placeholder="Confirmar Senha">
+                {% if rv == "confirmation" %}
+                    <small class="form-text is-invalid">
+                        Senha e confirmação devem ser iguais.
+                    </small>
+                {% endif %}
+            </div>
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-success">Alterar Dados</button>
+            </div>
+        </form>
+    </div> <!-- center-element -->
+    {% if user_profile %}
+        <div class="center-element max-w400 item-group">
+            <h3>Atualizar Perfil</h3>
+            <form method="post" action="/atualizar-dados" enctype="multipart/form-data">
+                <div class="form-group">
+                    <input autocomplete="off" type="text" name="name_update" class="form-control" placeholder="Nome Completo" value="{{ user_profile['name'] }}">
+                    {% if rv == "name_update" %}
+                        <small class="form-text is-invalid">
+                            Utilize um nome válido.
+                        </small>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <input type="text" name="phone_update" class="form-control" placeholder="Telefone" value="{{ user_profile['phone'] }}">
+                    {% if rv == "phone_update" %}
+                    <small class="form-text is-invalid">
+                        Campo vazio ou inválido.
+                    </small>
+                {% endif %}
+                </div>
+                <div class="form-group">
+                    <input type="text" name="zipcode_update" class="form-control" placeholder="CEP" value="{{ user_profile['zipcode'] }}">
+                    {% if rv == "zipcode_update" %}
+                        <small class="form-text is-invalid">
+                            Campo vazio ou inválido.
+                        </small>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <select class="form-control" name="category_update">
+                        <option>Escolha uma categoria</option>
+                        {% for row in cats %}
+                            {% if row['id'] == user_profile['cat_id'] %}
+                                <option value="{{ row['id'] }}" selected>{{ row["description"] }}</option>
+                            {% else %}
+                                <option value="{{ row['id'] }}">{{ row["description"] }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                    {% if rv == "category_update" %}
+                        <small class="form-text is-invalid">
+                            Selecione uma opção válida.
+                        </small>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <textarea class="form-control" name="description_update" placeholder="Descrição (opcional)" rows="3" value="{{ user_profile['description'] }}">{{ user_profile['description'] }}</textarea>
+                    {% if rv == "description_update" %}
+                        <small class="form-text is-invalid">
+                            Limite de caracteres excedido.
+                        </small>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <input type="file" name="file_update" class="file-input">
+                    <label for="file_update" class="form-control text-muted file-input-layout file-input-profile">
+                        {% if user_profile['picture'] %}
+                            <img src="{{ user_profile['picture'] }}" alt="{{ user_profile['name'] }}">
+                        {% else %}
+                            Inserir Imagem
+                        {% endif %}
+                    </label>
+                    {% if rv == "file_update" %}
+                        <small class="form-text is-invalid">
+                            Formatos permitidos: JPG, PNG e BMP (no máximo 2MB's).
+                        </small>
+                    {% elif rv == 413 %}
+                    <small class="form-text is-invalid">
+                        Erro interno. Escolha um arquivo de no máximo 2MB's.
+                    </small>
+                    {% endif %}
+                </div>
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-success">Alterar Dados</button>
+                </div>
+            </form>
+        </div> <!-- center-element -->
+    {% endif %}
+{% endblock %}

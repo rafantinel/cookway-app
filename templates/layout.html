@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Cookway {% block title %} {% endblock %}</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
+    <link rel='stylesheet' type='text/css' media='screen' href='/static/styles.css'>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://kit.fontawesome.com/2be180cf8d.js" crossorigin="anonymous"></script>
+    <script src="/static/scripts.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+</head>
+<body>
+    <nav class="navbar-header px-4 py-2 d-flex justify-content-between align-items-center p-relative">
+        <a class="app-title d-flex align-items-center pr-2" href="/">
+            <img src="/static/cookway-logo.svg" alt="Cookway">
+            <span class="ml-3">Cookway</span>
+        </a> <!-- app-title -->
+        <div class="navbar-items">
+            <button type="button" class="btn-mobile">
+                <i class="fas fa-bars"></i>
+            </button> <!-- btn-mobile -->
+            <div class="menu-mobile">
+                <ul>
+                    {% if session["user_id"] %}
+                        {% if not session["profile_created"] %}
+                            <li>
+                                <a href="/perfil">Criar Perfil</a>
+                            </li>
+                        {% endif %}
+                        {% if session["profile_created"] %}
+                            <li>
+                                <a href="/pratos">Pratos</a>
+                            </li>
+                        {% endif %}
+                        <li>
+                            <a href="/atualizar-dados">Meus Dados</a>
+                        </li>
+                        <li>
+                            <a href="/logout">Logout</a>
+                        </li>
+                    {% else %}
+                        <li>
+                            <a href="/login">Login</a>
+                        </li>
+                        <li>
+                            <a href="/cadastro">Cadastro</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div> <!-- menu-mobile -->
+            <div class="menu-desktop">
+                <ul>
+                    {% if session["user_id"] %}
+                        {% if not session["profile_created"] %}
+                            <li>
+                                <a href="/perfil">Criar Perfil</a>
+                            </li>
+                        {% endif %}
+                        {% if session["profile_created"] %}
+                            <li>
+                                <a href="/pratos">Pratos</a>
+                            </li>
+                        {% endif %}
+                        <li>
+                            <a href="/atualizar-dados">Meus Dados</a>
+                        </li>
+                        <li>
+                            <a href="/logout">Logout</a>
+                        </li>
+                    {% else %}
+                        <li>
+                            <a href="/login">Login</a>
+                        </li>
+                        <li>
+                            <a href="/cadastro">Cadastro</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div> <!-- menu-desktop -->
+        </div> <!-- navbar-items -->
+    </nav> <!-- navbar-header -->
+    <main>
+        {%block main %} {% endblock %}
+    </main> <!-- main -->
+    <footer>
+        <nav class="navbar navbar-dark d-flex justify-content-center fixed-bottom">
+            <span class="navbar-text">Cookway App</span>
+        </nav>
+    </footer> <!-- footer-->
+</body>
+</html>

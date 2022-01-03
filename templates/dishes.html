@@ -1,0 +1,371 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    - Pratos
+{% endblock %}
+
+{% block main %}
+  <div class="btn-container d-flex flex-wrap">
+    <div class="btn-group">
+        <button type="button" class="btn btn-success btn-container add-dish-btn">Novo Prato</button>
+    </div>
+    <div class="btn-group">
+      <button type="button" class="btn btn-success btn-container add-menu-btn">Novo Menu</button>
+    </div>
+  </div> <!-- btn-container -->
+  <div class="screen-filter {% if not form_err.get('deletar_prato') and rv != 'request_error' %}d-none{% endif %}"></div> <!-- screen filter -->
+  {% if rv == "request_error" %}
+    <div class="message-delete message-request-error max-w400 abs-container">
+        <div class="message">
+          <span>Erro interno. Atualize a página e tente novamente.</span>
+        </div>
+        <div class="d-flex justify-content-end">
+          <button type="button" class="btn btn-secondary message-btn message-request-btn">Ok</button>
+        </div>
+    </div> <!-- message-request-error -->
+  {% endif %}
+  <div class="message-box message-delete max-w400 {% if not form_err.get('deletar_prato') %}d-none{% endif %} abs-container">
+      {% if form_err.get('deletar_prato') %}
+        <form method="post" action="/pratos?deletar_prato={{form_err['deletar_prato']}}">
+      {% elif form_err.get('deletar_menu') %}
+        <form method="post" action="/pratos?deletar_menu={{form_err['deletar_menu']}}">
+      {% else %}
+        <form method="post" action="">
+      {% endif %}
+      <div class="message">
+        <span>Tem certeza que deseja deletar esse item?</span>
+      </div>
+      {% if rv == "menu_exists" %}
+          <small class="form-text is-invalid">
+            Este prato pertence a pelo menos um menu. Não é possível excluir.
+          </small>
+      {% endif %}
+      <div class="d-flex justify-content-end">
+        {% if rv == "menu_exists" %}
+          <button type="button" class="btn btn-secondary delete-error message-btn">Ok</button>
+        {% else %}
+          <button type="submit" class="btn btn-success submit-delete message-btn">Sim</button>
+          <button type="button" class="btn btn-danger cancel-delete message-btn">Não</button>
+        {% endif %}
+      </div>
+    </form>
+  </div> <!-- message-box -->
+  <div class="form-container-dishes d-none abs-container">
+    <h3>Adicionar Prato</h3>
+      {% if form_err.get('adicionar_prato') %}
+        <form method ="post" action="/pratos?adicionar_prato=1" class="dishes-form" enctype="multipart/form-data">
+      {% elif form_err.get('atualizar_prato') %}
+        <form method ="post" action="/pratos?atualizar_prato={{form_err['atualizar_prato']}}" class="dishes-form" enctype="multipart/form-data">
+      {% else %}
+        <form method ="post" class="dishes-form" enctype="multipart/form-data">
+      {% endif %}
+      <button type=button class="close-btn">
+        <i class="far fa-times-circle"></i>
+      </button>
+      <div class="form-group">
+        <input autocomplete="off" type="text" name="name_dish" class="form-control" placeholder="Nome do Prato">
+        {% if rv == "name_dish" %}
+            <small class="form-text is-invalid">
+                Utilize um nome válido para o prato.
+            </small>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <input autocomplete="off" type="text" name="description_dish" class="form-control" placeholder="Descrição do Prato">
+        {% if rv == "description_dish" %}
+            <small class="form-text is-invalid">
+                Limite de caracteres ultrapassado (250 caracteres).
+            </small>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <select class="form-control" name="type_dish">
+          <option selected>Classificação do Prato</option>
+          {% for row in types %}
+            <option value="{{ row['id'] }}">{{ row['type'].title() }}</option>
+          {% endfor %}
+        </select>
+        {% if rv == "type_dish" %}
+          <small class="form-text is-invalid">
+              Selecione uma opção válida.
+          </small>
+        {% elif rv == "type_menu_exists" %}
+            <small class="form-text is-invalid">
+                Este prato pertence a pelo menos um menu. Não é possível alterar a sua classificação.
+            </small>
+        {% endif %}
+      </div>
+      <div class="form-group p-relative">
+        <input autocomplete="off" type="text" name="name_ingredients_dish" class="form-control" placeholder="Adicione um Ingrediente">
+        {% if rv == "name_ingredients_dish" %}
+            <small class="form-text is-invalid">
+                Adicione pelo menos um e no máximo 12 ingredientes (até 1000 caracteres no total).
+            </small>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <div class="input-control-container d-flex">
+          <button type="button" class="btn-add-ingredient btn btn-success btn-sm btn-input-control">+</button>
+          <button type="button" class="btn-remove-ingredient btn btn-danger btn-sm btn-input-control">-</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="name_ingredients_dish" class="form-control ingredients-box" hidden>
+        </label>
+      </div>
+      <div class="form-group">
+        <input autocomplete="off" type="text" name="price_dish" class="form-control" placeholder="Valor do Prato">
+        {% if rv == "price_dish" %}
+            <small class="form-text is-invalid">
+                Digite valor inteiro ou decimal positivo.
+            </small>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <input autocomplete="off" type="file" name="file_dish" hidden class="file-input">
+        <label for="file_dish" class="form-control text-muted file-input-layout file-input-dishes">Inserir Imagem</label>
+        {% if rv == "file_dish" %}
+          <small class="form-text is-invalid">
+            Formatos permitidos: JPG, PNG e BMP (no máximo 2MB's).
+          </small>
+        {% elif rv == 413 %}
+          <small class="form-text is-invalid">
+            Erro interno. Escolha um arquivo de no máximo 2MB's.
+          </small>
+        {% endif %}
+      </div>
+      <div class="form-group d-flex justify-content-end">
+        <button type="submit" class="btn btn-success submit-dishes">Adicionar</button>
+      </div>
+    </form>
+  </div> <!-- form-container-dishes -->
+  <div class="form-container-menus d-none abs-container">
+    <h3>Adicionar Menu</h3>
+    {% if form_err.get('adicionar_menu') %}
+      <form method="post" action="/pratos?adicionar_menu=1" enctype="multipart/form-data" class="menus-form">
+    {% elif form_err.get('atualizar_menu') %}
+      <form method="post" action="/pratos?atualizar_menu={{form_err['atualizar_menu']}}" enctype="multipart/form-data" class="menus-form">
+    {% else %}
+      <form method="post" action="" enctype="multipart/form-data" class="menus-form">  
+    {% endif %}
+      <button type=button class="close-btn">
+        <i class="far fa-times-circle"></i>
+      </button>
+      <div class="form-group">
+        <input autocomplete="off" type="text" name="name_menu" class="form-control" placeholder="Nome do Menu">
+        {% if rv == "name_menu" %}
+            <small class="form-text is-invalid">
+                Utilize um nome válido para o menu.
+            </small>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <input autocomplete="off" type="text" name="description_menu" class="form-control" placeholder="Descrição do Menu">
+        {% if rv == "description_menu" %}
+            <small class="form-text is-invalid">
+                Limite de caracteres ultrapassado (250 caracteres).
+            </small>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <select class="form-control" name="entry_menu">
+          <option selected>Entrada</option>
+          {% if dishes %}
+            {% for row in dishes %}
+              {% if row['type_id'] == 1 %}
+                <option value="{{ row['id'] }}">{{ row['dish'] }}</option>
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+        </select>
+        {% if rv == "entry_menu" %}
+          <small class="form-text is-invalid">
+              Selecione uma opção válida.
+          </small>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <select class="form-control" name="main_menu">
+          <option selected>Prato Principal</option>
+          {% if dishes %}
+            {% for row in dishes %}
+              {% if row['type_id'] == 2 %}
+                <option value="{{ row['id'] }}">{{ row['dish'] }}</option>
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+        </select>
+        {% if rv == "main_menu" %}
+          <small class="form-text is-invalid">
+              Selecione uma opção válida.
+          </small>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <select class="form-control" name="dessert_menu">
+          <option selected>Sobremesa</option>
+          {% if dishes %}
+            {% for row in dishes %}
+              {% if row['type_id'] == 3 %}
+                <option value="{{ row['id'] }}">{{ row['dish'] }}</option>
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+        </select>
+        {% if rv == "dessert_menu" %}
+          <small class="form-text is-invalid">
+              Selecione uma opção válida.
+          </small>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <input autocomplete="off" type="text" name="price_menu" class="form-control" placeholder="Valor do Menu">
+        {% if rv == "price_menu" %}
+            <small class="form-text is-invalid">
+                Digite valor inteiro ou decimal positivo.
+        {% endif %}
+      </div>
+      <div class="form-group d-flex justify-content-end">
+        <button type="submit" class="btn btn-success submit-menus">Adicionar</button>
+      </div>
+    </form>
+  </div> <!-- form-container-menus -->
+  {% if dishes %}
+    <div class="table-container item-group">
+      <h3>Lista de Pratos</h3>
+      <div class="table-responsive">
+        <table class="table table-dishes">
+          <thead>
+            <tr>
+              <th scope="col">Alterar</th>
+              <th scope="col">Índice</th>
+              <th scope="col">Foto</th>
+              <th scope="col">Prato</th>
+              <th scope="col">Descrição</th>
+              <th scope="col">Classificação</th>
+              <th scope="col">Menu</th>
+              <th scope="col">Ingredientes</th>
+              <th scope="col">Preço</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in dishes %}
+              <tr>
+                <th scope="row">
+                  <i class="fas fa-trash"></i> 
+                  <i class="fas fa-pen"></i>
+                </th>
+                <td>
+                  <span id="dishId_{{ row['id'] }}" value="{{ row['id'] }}">
+                    {{ loop.index }}
+                  </span>
+                </th>
+                <td>
+                  {% if row['image'] == "" %}
+                    <span id="dishImage_{{ row['id'] }}" class="form-value form-image" ><img src="/static/food-dish.png" alt="{{ row['dish'] }}"></span>
+                  {% else %}
+                    <span id="dishImage_{{ row['id'] }}" class="form-value"><img src="{{ row['image'] }}" alt="{{ row['dish'] }}"></span>
+                  {% endif %}
+                </td>
+                <td>
+                  <span id="dishName_{{ row['id'] }}" class="form-value">{{ row['dish'] }}</span>
+                </td>
+                <td>
+                  {% if row['description'] == "" %}
+                    <span id="dishDescription_{{ row['id'] }}" class="form-value">sem descrição</span>
+                  {% else %}
+                    <span id="dishDescription_{{ row['id'] }}" class="form-value">{{ row['description'] }}</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <span id="dishType_{{ row['id'] }}" value="{{ row['type_id'] }}" class="form-value">{{ row['type'].title() }}</span>
+                </td>
+                <td>
+                  <select class="form-control">
+                    <option selected>Menus</option>
+                    {% if menus_list %}
+                      {% for menu in menus_list %}
+                        {% if row['id'] == menu['dish_id'] %}
+                            <option>{{ menu["menu"] }}</option>
+                        {% endif %}
+                      {% endfor %}
+                    {% endif %}
+                  </select>
+                </td>
+                <td>
+                  <select class="form-control" id = "dishIngredients_{{ row['id'] }}">
+                    <option selected>Ingred.</option>
+                      {% for item in row['ingredients'].split("_") %}
+                            <option>{{ item }}</option>
+                      {% endfor %}
+                  </select>
+                </td>
+                <td>
+                  <span id="dishPrice_{{ row['id'] }}" value="{{  br_currency(row['price']).replace('R$ ', '') }}" class="form-value">{{ br_currency(row['price']) }}</span>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div> <!-- table-responsive -->
+    </div> <!-- table-container  -->
+  {% endif %} 
+  {% if menus %}
+    <div class="table-container item-group">
+      <h3>Lista de Menus</h3>
+      <div class="table-responsive">
+        <table class="table table-menus">
+          <thead>
+            <tr>
+              <th scope="col">Alterar</th>
+              <th scope="col">Índice</th>
+              <th scope="col">Menu</th>
+              <th scope="col">Descrição</th>
+              <th scope="col">Entrada</th>
+              <th scope="col">Prato Principal</th>
+              <th scope="col">Sobremesa</th>
+              <th scope="col">Preço</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in menus %}
+              <tr>
+                <th scope="row">
+                  <i class="fas fa-trash"></i> 
+                  <i class="fas fa-pen"></i>
+                </th>
+                <td>
+                  <span id="menuId_{{ row['id'] }}" value="{{ row['id'] }}">
+                    {{ loop.index }}
+                  </span>
+                </th>
+                <td>
+                  <span id="menuName_{{ row['id'] }}" class="form-value">{{ row['menu'] }}</span>
+                </td>
+                <td>
+                  {% if row['description'] == "" %}
+                    <span id="menuDescription_{{ row['id'] }}" class="form-value">sem descrição</span>
+                  {% else %}
+                    <span id="menuDescription_{{ row['id'] }}" class="form-value">{{ row['description'] }}</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <span id="menuEntry_{{ row['id'] }}" class="form-value" value="{{ row['entry_dish_id'] }}">{{ row['entry'] }}</span>
+                </td>
+                <td>
+                  <span id="menuMain_{{ row['id'] }}" class="form-value" value="{{ row['main_dish_id'] }}">{{ row['main'] }}</span>
+                </td>
+                <td>
+                  <span id="menuDessert_{{ row['id'] }}" class="form-value" value="{{ row['dessert_dish_id'] }}">{{ row['dessert'] }}</span>
+                </td>
+                <td>
+                  <span id="menuPrice_{{ row['id'] }}" value="{{  br_currency(row['price']).replace('R$ ', '') }}" class="form-value">{{ br_currency(row['price']) }}</span>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div> <!-- table-responsive -->
+    </div> <!-- table-container  -->
+  {% endif %}
+{% endblock %}

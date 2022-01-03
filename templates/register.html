@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    - Cadastro
+{% endblock %}
+
+{% block main %}
+    <div class="center-element max-w400 item-group">
+        <h2>Cadastre-se</h2>
+        <form method="post" action="/cadastro">
+            <div class="form-group">
+                <input autocomplete="off" type="text" name="email_login" class="form-control" placeholder="E-mail">
+                {% if rv == "email_login" %}
+                    <small class="form-text is-invalid">
+                        Campo vazio ou inválido.
+                    </small>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <input type="password" name="password_login" class="form-control" placeholder="Senha">
+                {% if rv == "password_login" %}
+                    <small class="form-text is-invalid">
+                        A senha deve conter: entre 8 e 16 caracteres, número(s), letra(s) e caracter especial(is).
+                    </small>
+                {% else %}
+                    <small class="form-text text-muted d-none">
+                        A senha deve conter: entre 8 e 16 caracteres, número(s), letra(s) e caracter especial(is).
+                    </small>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <input type="password" name="confirmation" class="form-control" placeholder="Confirmar Senha">
+                {% if rv == "confirmation" %}
+                    <small class="form-text is-invalid">
+                        Senha e confirmação devem ser iguais.
+                    </small>
+                {% endif %}
+            </div>
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-success">Cadastrar</button>
+            </div>
+        </form>
+    </div> <!-- center-element -->
+{% endblock %}

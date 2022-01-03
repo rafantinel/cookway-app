@@ -1,0 +1,92 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    - {{ professional_profile['name'] }}
+{% endblock %}
+
+{% block main %}
+    <div class="profile-container-large item-group">
+        <div class="picture-profile">
+            {% if professional_profile['picture'] == "" %}
+                <img src="/static/blank-profile.png" alt="{{ professional_profile['name'] }}">
+            {% else %}
+                <img src="/{{ professional_profile['picture'] }}" alt="{{ professional_profile['name'] }}">
+            {% endif %}
+        </div>
+        <div class="info-container">
+            <p>Nome: {{ professional_profile['name'] }} </p>
+            <p>Categoria: {{ professional_profile['category'] }}</p>
+            <p>Descrição: {{ professional_profile['description'] }}</p>
+            <p>Telefone: {{ professional_profile['phone'] }}</p>
+            <p>E-mail: {{ professional_profile['email'] }}</p>
+        </div>
+    </div> <!-- profile-container-large -->
+    {% if professional_dishes %}
+        <div class="item-group">
+            <h3>Lista de Pratos</h3>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Foto</th>
+                            <th scope="col">Prato</th>
+                            <th scope="col">Descrição</th>
+                            <th scope="col">Classificação</th>
+                            <th scope="col">Ingredientes</th>
+                            <th scope="col">Preço</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in professional_dishes %}
+                        <tr>
+                            <td>
+                                {% if row['image'] == "" %}
+                                    <img src="/static/food-dish.png" alt="{{ row['dish'] }}">
+                                {% else %}
+                                    <img src="/{{ row['image'] }}" alt="{{ row['dish'] }}">
+                                {% endif %}
+                            </td>
+                            <td>{{ row['dish'] }}</td>
+                            <td>{{ row['description'] }}</td>
+                            <td>{{ row['type'].title() }}</td>
+                            <td>{{ row['ingredients'] }}</td>
+                            <td>{{ br_currency(row['price']) }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div> <!-- item-group -->
+    {% endif %}
+    {% if professional_menus %}
+        <div class="item-group">
+            <h3>Lista de Menus</h3>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th scope="col">Menu</th>
+                        <th scope="col">Descrição</th>
+                        <th scope="col">Entrada</th>
+                        <th scope="col">Prato Principal</th>
+                        <th scope="col">Sobremesa</th>
+                        <th scope="col">Preço</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in professional_menus %}
+                        <tr>
+                            <td>{{ row['menu'] }}</td>
+                            <td>{{ row['menu_description'] }}</td>
+                            <td>{{ row['entry'] }}</td>
+                            <td>{{ row['main'] }}</td>
+                            <td>{{ row['dessert'] }}</td>
+                            <td>{{ br_currency(row['price']) }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div> <!-- item-group -->
+    {% endif %}
+{% endblock %}
