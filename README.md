@@ -21,25 +21,24 @@ Users can search for professionals on the main page, with or without registratio
 
 ### Routing Functions
 
-- index
-- show_profile
-- register
-- login
-- logout
-- update_user_data
-- dishes
-- handle_exception
+- index - if the search form is submitted, returns a template with the searched professionals
+- show_profile - returns a template with the information about one profile
+- register - registers users
+- login - logs user in and start session
+- logout - logs user out and clear session
+- update_user_data - returns a template where user can update or delete his profile or account data
+- dishes - returns a template with forms for adding, editing and deleting dishes and menus
+- handle_exception - basically handles an exception when user tries to upload a file too large
 
 ### Other Functions
 
-- get_db
-- run_db
-- login_required
-- allowed_file
-- validate_file
-- validate_fields
-- validate_file
-- br_currency
+- get_db - gets database connection
+- run_db - executes queries (returns an array of dictionaries if the application wants to select data)
+- login_required - login required decorator (some routes requires user to be logged in)
+- allowed_file - returns "True" if the file extension is .jpg, .jpeg, .bmt or .png
+- validate_fields - validates form submissions with regular expressions
+- validate_file - validates and changes file name with a hash function
+- br_currency - formats a float number to local currency style
 
 ### Cities and States API (IBGE)
 
@@ -49,13 +48,13 @@ More about the API on: https://servicodados.ibge.gov.br/api/docs/localidades
 
 ### Database Tables
 
-- users
-- cats
-- types
-- dishes
-- menus
-- dishes_m
-- professionals
+- users - contains users' email and password hash
+- cats - profile categories
+- types - types of dishes (entry, main and dessert)
+- dishes - information about the dishes, like name price and description
+- menus - information about the menus, like name price and description
+- dishes_m - contains all the dishes that are included in menus
+- professionals - information about the created profiles, like phone, name, description and location
 
 ## Github Repository
 
