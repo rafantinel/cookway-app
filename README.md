@@ -42,7 +42,7 @@ Users can search for professionals on the main page, with or without registratio
 
 ### Cities and States API (IBGE)
 
-This API from IBGE generates a .json response to find all the states from Brazil and their cities. With  JQuery's getJSON function, a dynamic search from can be easily created using this API.
+This API from IBGE generates a .json response to find all the states from Brazil and their cities. With  JQuery's getJSON function, a dynamic search form can be easily created using this API.
 
 More about the API on: https://servicodados.ibge.gov.br/api/docs/localidades
 
