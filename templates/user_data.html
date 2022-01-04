@@ -5,6 +5,17 @@
 {% endblock %}
 
 {% block main %}
+    {% if rv == "request_error" %}
+        <div class="screen-filter"></div> <!-- screen filter -->
+        <div class="message-delete message-box message-request-error max-w400 abs-container">
+            <div class="message">
+            <span>Erro interno. Atualize a página e tente novamente.</span>
+            </div>
+            <div class="d-flex justify-content-end">
+            <button type="button" class="btn btn-secondary message-btn message-request-btn">Ok</button>
+            </div>
+        </div> <!-- message-request-error -->
+    {% endif %}
     <div class="center-element max-w400 item-group">
         <h3>Nova Senha</h3>
         <form method="post" action="/atualizar-dados" enctype="multipart/form-data">
@@ -110,5 +121,37 @@
                 </div>
             </form>
         </div> <!-- center-element -->
+        <div class="center-element max-w400 item-group">
+            <h3>Deletar Perfil</h3>
+            <form method="post" action="/atualizar-dados?deletar_perfil=1" enctype="multipart/form-data">
+                <div class="form-group">
+                    <input type="password" name="password_delete" class="form-control" placeholder="Senha">
+                    {% if rv == "password_delete_profile" %}
+                        <small class="form-text is-invalid">
+                            Senha incorreta.
+                        </small>
+                    {% endif %}
+                </div>
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-danger">Deletar</button>
+                </div>
+            </form>
+        </div> <!-- center-element -->
     {% endif %}
+    <div class="center-element max-w400 item-group">
+        <h3>Deletar Usuário</h3>
+        <form method="post" action="/atualizar-dados?deletar_usuario=1" enctype="multipart/form-data">
+            <div class="form-group">
+                <input type="password" name="password_delete" class="form-control" placeholder="Senha">
+                {% if rv == "password_delete_user" %}
+                    <small class="form-text is-invalid">
+                        Senha incorreta.
+                    </small>
+                {% endif %}
+            </div>
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-danger">Deletar</button>
+            </div>
+        </form>
+    </div> <!-- center-element -->
 {% endblock %}

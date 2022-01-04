@@ -170,6 +170,11 @@ def profile():
         if check_file == "valid" or check_file == "invalid":
             rv["file_profile"] = check_file
         
+        try:
+            get_location = pycep_correios.get_address_from_cep(request.form["zipcode_profile"])
+        except:
+            rv["zipcode_profile"] = "invalid"
+
         for item in rv:
             if rv[item] == "invalid":
                 return render_template("profile.html", rv=item, cats=session["cats"]), 400
@@ -181,7 +186,6 @@ def profile():
             check_file[0].save(os.path.join(filepath))
         
         # Get location from zipcode
-        get_location = pycep_correios.get_address_from_cep(request.form["zipcode_profile"])
 
         # Insert profile into database
         run_db("INSERT INTO professionals (user_id, cat_id, name, phone, zipcode, state, city, description, picture) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", [session["user_id"], category[0]["id"], request.form["name_profile"].upper(), request.form["phone_profile"], request.form["zipcode_profile"], get_location["uf"], get_location["cidade"], request.form["description_profile"], filepath])
@@ -202,63 +206,109 @@ def profile():
 @app.route("/atualizar-dados", methods=["GET","POST"])
 @login_required
 def update_user_data():
-    """Update user data"""
+    """Update or delete user data"""
 
     # Route accessed via form submitting
     if request.method == "POST":
 
-        # Validate form
-        rv = validate_fields(request.form)
-        if request.form.get("password"):
-            if request.form["confirmation"] == request.form["password"]:
-                rv["confirmation"] = "valid"
+        # Validate args
+        if request.args:
+            try:
+                request_id = int(list(request.args.values())[0])
+                item_name = list(request.args.keys())[0]
+                if (item_name != "deletar_usuario" and item_name != "deletar_perfil") or request_id != 1:
+                    return render_template("user_data.html", rv="request_error", cats=session["cats"], user_profile=session["user_profile"]), 400
+            except:
+                return render_template("user_data.html", rv="request_error", cats=session["cats"], user_profile=session["user_profile"]), 400
 
-            for item in rv:
-                if rv[item] == "invalid":
-                    return render_template("user_data.html", rv=item, cats=session["cats"], user_profile=session["user_profile"])
-            
-            # Generate password hash
-            hash = generate_password_hash(request.form["password"], method='pbkdf2:sha256', salt_length=16)
+            # Delete user account or profile
+            get_password_hash = run_db("SELECT hash FROM users WHERE id = ?", [session["user_id"]])[0]["hash"]
+            check_password = check_password_hash(get_password_hash, request.form["password_delete"])
 
-            # Update password hash in database
-            run_db("UPDATE users SET hash = ? WHERE id = ?", [hash, session["user_id"]])
+            if check_password:
+                if session["profile_created"]:
+                    run_db("DELETE FROM professionals WHERE user_id = ?", [session["user_id"]])
+                    run_db("DELETE FROM dishes_m WHERE dish_id IN (SELECT id FROM dishes WHERE user_id = ?)", [session["user_id"]])
+                    run_db("DELETE FROM dishes WHERE user_id = ?", [session["user_id"]])
+                    run_db("DELETE FROM menus WHERE user_id = ?", [session["user_id"]])
+                if item_name == "deletar_usuario":
+                    run_db("DELETE FROM users WHERE id = ?", [session["user_id"]])
+                    session.clear()
+                    return redirect("/login")
+                elif item_name == "deletar_perfil":
+                    session["profile_created"] = False
+                    session["user_profile"] = None
+                    return render_template("user_data.html", rv=None, cats=session["cats"], user_profile=session["user_profile"])
+            else:
+
+                if item_name == "deletar_usuario":
+                    rv = "password_delete_user"
+                elif item_name == "deletar_perfil":
+                    rv = "password_delete_profile"
+
+                return render_template("user_data.html", rv=rv, cats=session["cats"], user_profile=session["user_profile"]), 400
+
         else:
-
             # Validate form
-            if len(request.form["description_update"]) <= 1000:
-                rv["description_update"] = "valid"
+            rv = validate_fields(request.form)
+            if request.form.get("password"):
+                if request.form["confirmation"] == request.form["password"]:
+                    rv["confirmation"] = "valid"
 
-            category = run_db("SELECT id FROM cats WHERE id = ?", [request.form["category_update"]])
-            if category:
-                rv["category_update"] = "valid"
+                for item in rv:
+                    if rv[item] == "invalid":
+                        return render_template("user_data.html", rv=item, cats=session["cats"], user_profile=session["user_profile"])
+                
+                # Generate password hash
+                hash = generate_password_hash(request.form["password"], method='pbkdf2:sha256', salt_length=16)
 
-            check_file = validate_file(request.files["file_update"])
-            if check_file == "valid" or check_file == "invalid":
-                rv["file_update"] = check_file
-        
-            for item in rv:
-                if rv[item] == "invalid":
-                    return render_template("user_data.html", rv=item, cats=session["cats"], user_profile=session["user_profile"]), 400
+                # Update password hash in database
+                run_db("UPDATE users SET hash = ? WHERE id = ?", [hash, session["user_id"]])
 
-            if check_file == "valid":
-                filepath = ""
+                return redirect("/atualizar-dados")
+
             else:
-                filepath = app.config["USER_FILES"] + "profile_pic/"  + check_file[1]
-                check_file[0].save(os.path.join(filepath))
+                # Validate form
+                if len(request.form["description_update"]) <= 1000:
+                    rv["description_update"] = "valid"
 
-            # Get profile picture
-            get_file = run_db("SELECT picture FROM professionals WHERE user_id = ?", [session["user_id"]])[0]["picture"]
-            if filepath != "":
-                if get_file:
-                    if os.path.exists(get_file):
-                        os.remove(get_file)
-            else:
-                filepath = get_file
+                category = run_db("SELECT id FROM cats WHERE id = ?", [request.form["category_update"]])
+                if category:
+                    rv["category_update"] = "valid"
 
-            # Update user profile
-            run_db("UPDATE professionals SET cat_id = ?, name = ?, phone = ?, zipcode = ?, description = ?, picture = ? WHERE user_id = ?", [request.form["category_update"], request.form["name_update"], request.form["phone_update"], request.form["zipcode_update"], request.form["description_update"], filepath, session["user_id"]])
+                check_file = validate_file(request.files["file_update"])
+                if check_file == "valid" or check_file == "invalid":
+                    rv["file_update"] = check_file
 
-        return redirect("/atualizar-dados")
+                try:
+                    get_location = pycep_correios.get_address_from_cep(request.form["zipcode_update"])
+                except:
+                    rv["zipcode_update"] = "invalid"
+            
+                for item in rv:
+                    if rv[item] == "invalid":
+                        return render_template("user_data.html", rv=item, cats=session["cats"], user_profile=session["user_profile"]), 400
+
+                if check_file == "valid":
+                    filepath = ""
+                else:
+                    filepath = app.config["USER_FILES"] + "profile_pic/"  + check_file[1]
+                    check_file[0].save(os.path.join(filepath))
+
+                # Get profile picture
+                get_file = run_db("SELECT picture FROM professionals WHERE user_id = ?", [session["user_id"]])[0]["picture"]
+                if filepath != "":
+                    if get_file:
+                        if os.path.exists(get_file):
+                            os.remove(get_file)
+                else:
+                    filepath = get_file
+
+                # Update user profile
+                run_db("UPDATE professionals SET cat_id = ?, name = ?, phone = ?, zipcode = ?, state = ?, city = ?, description = ?, picture = ? WHERE user_id = ?", [request.form["category_update"], request.form["name_update"], request.form["phone_update"], request.form["zipcode_update"], get_location["uf"], get_location["cidade"], request.form["description_update"], filepath, session["user_id"]])
+                
+                session["user_profile"] = run_db("SELECT * FROM professionals WHERE user_id = ?", [session["user_id"]])[0]
+                return redirect("/atualizar-dados")
 
     # Route accessed via link or url
     else:

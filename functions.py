@@ -24,7 +24,7 @@ def run_db(query, args=()):
     except:
         return None
 
-    if "SELECT" in query:
+    if "SELECT" in query and "DELETE" not in query and "INSERT" not in query and "UPDATE" not in query:
         fields = list(map(lambda x: x[0], cur.description))
         fetch = cur.fetchall()
         cur.close()

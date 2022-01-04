@@ -31,7 +31,8 @@ $(function() {
 
     // File input style
     $(".file-input").change(function() {
-        $(".file-input-dishes, .file-input-profile").css("padding", ".375rem .75rem");
+        $(this).parent().children().closest(".file-input-layout").css("padding", ".375rem .75rem");
+        // $(".file-input-dishes, .file-input-profile").css("padding", ".375rem .75rem");
         var filename = $(this).val().split("\\").pop();
         if (filename != "") {
             $(this).parent().children().closest(".file-input-layout").html(filename);
