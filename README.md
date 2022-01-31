@@ -58,4 +58,4 @@ More about the API on: https://servicodados.ibge.gov.br/api/docs/localidades
 
 ## Github Repository
 
-https://github.com/rafantinel/Cookway-App
+https://github.com/rafantinel/cookway-app
